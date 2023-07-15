@@ -116,19 +116,61 @@ pwt_mutsel_balance <- function( mu, omega ){
 #' # Plot the annotated trees for both scenarios
 #' p1 <-bisseco_plot( tr1, legend = TRUE ) 
 #' p2 <-bisseco_plot(tr2 , legend=TRUE)
-simulate_bisseco <- function( mu, omega, maxHeight , Net, res = 200,  sampleTimes, sampleStates, ...)
+simulate_bisseco <- function( mu, omega, maxHeight , Net, sampleTimes, sampleStates, res = 200,  ...)
 {
 	# library( phydynR )
 	# library( ape )
 
-	if ( .pw( mu, omega ) <= 0 ) 
+	if (pwt_mutsel_balance( mu, omega ) <= 0 ) 
 		return(NULL)
 	tfgy <- .make.bisseco.culdesac.tfgy ( mu, omega, maxHeight, Net, res)
+browser()
 	phydynR::sim.co.tree.fgy( tfgy, sampleTimes, sampleStates, ...)
 }
 
+#' Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time
+#'
+#' @param mu_omega a 2-vector containing parameters mu (mutation rate) and omega (selection coef)
+#' @param dtr A phydynR::DatedTree
+#' @param maxHeight Maximum time in the past to simulate
+#' @param Net Effective population size through time. This is stored as a two column
+#' matrix, such that the first column is time and the second column is population size
+likelihood_bisseco <- function( mu_omega, dtr, Net, res = 200, ... )
+{
+	mu <- mu_omega[1]
+	omega <- mu_omega[2]
+	maxHeigh <- diff( range( Net[,1] ))
+	tfgy <- .make.bisseco.culdesac.tfgy ( mu, omega, maxHeight, Net, res)
+	phydynR::colik.pik.fgy(dtr 
+		  , tfgy
+		  , ...
+		)
+}
 
+set.seed( 23 ) 
 
+# Sample times: these will be distributed over 150 years to show role of heterochronous sampling
+sts <- setNames( sample( seq( 300, 500, length=20 )), letters[1:20] )
+
+# We will have the effective sample size increase linearly through time so that external branch lengths are longer: 
+net <- cbind( seq(0, 501, length=500),  seq(1,200,length=500)  )
+
+# Sample states: arranged in a matrix where each row gives the probability of being wildtype or mutant
+ssts <- cbind( wt = c( rep(1,15), rep(0, 5))
+ , mutant = c( rep( 0, 15), rep(1, 5 ) ) 
+ )
+rownames( ssts ) <- letters[1:20]
+
+# Scenario A: Low denovo mutation rate and relatively high transmission fitness
+tr1 = simulate_bisseco( .001, .995
+ , maxHeight = 500
+ , Net = net
+ , res = 500
+ , sampleTimes = sts
+ , sampleStates = ssts 
+) 
+
+# (l1 <- likelihood_bisseco( c(.001,.995), tr1, net ))
 
 
 #' Make a plot of a bisseco tree that shows ancestral states at internal nodes estimated using a simple discrete trait analysis 
