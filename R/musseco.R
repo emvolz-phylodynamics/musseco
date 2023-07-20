@@ -162,6 +162,7 @@ bisseco_plot <- function(tr, legend=FALSE)
 	mtips <- rownames(ssts)[ ssts[,'mutant']>.5 ]
 	x <- setNames( rep('wt', ape::Ntip(tr)), tr$tip.label)
 	x[ names(x) %in% mtips ] <- 'mutant' 
+	class( tr ) <- 'phylo'
 	tr2 <- treeio::full_join(tr, data.frame(label = names(x), stat = x ), by = 'label')
 	p <- ggtree(tr2) +
 		geom_tippoint(aes(color = stat)) + 
