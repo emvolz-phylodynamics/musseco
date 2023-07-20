@@ -139,7 +139,7 @@ loglikelihood_bisseco <- function( mu_omega, dtr, Net, res = 200, ... )
 {
 	mu <- mu_omega[1]
 	omega <- mu_omega[2]
-	maxHeigh <- diff( range( Net[,1] ))
+	maxHeight <- diff( range( Net[,1] ))
 	tfgy <- .make.bisseco.culdesac.tfgy ( mu, omega, maxHeight, Net, res)
 	phydynR::colik.pik.fgy(dtr 
 		  , tfgy
