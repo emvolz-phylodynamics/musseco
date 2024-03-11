@@ -17,7 +17,7 @@ pwt_mutsel_balance <- function( mu, omega ){
 	min(1, max(0, (1 - omega*(1+mu)) / (1-omega*(1+mu) + mu ) ) )
 }
 
-#' Generates an epidmielogical history as input for the tree simulation functions
+#' Generates an epidemiological history as input for the tree simulation functions
 #'
 #' See _phydynR_ package for details on output format 
 #' 
@@ -31,10 +31,10 @@ pwt_mutsel_balance <- function( mu, omega ){
 {
 	# Birth rate of wild type 
 	fw <- 1 + mu 
-	# Birht rate of mutant 
+	# Birth rate of mutant 
 	fr <- omega * fw 
 	# Proportion wild type 
-	pw <- (1 - omega*(1+mu)) / (1-omega*(1+mu) + mu ) # todo 0-1?
+	pw <- min(1, max(0, (1 - omega*(1+mu)) / (1-omega*(1+mu) + mu ) ) )
 	dx <- mh / res 
 	
 	times <- sort( Net[,1] )
