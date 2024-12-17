@@ -2,14 +2,14 @@
 % Please edit documentation in R/musseco.R
 \name{.make.bisseco.culdesac.tfgy}
 \alias{.make.bisseco.culdesac.tfgy}
-\title{Generates an epidmielogical history as input for the tree simulation functions}
+\title{Generates an epidemiological history as input for the tree simulation functions}
 \usage{
 .make.bisseco.culdesac.tfgy(mu, omega, mh, Net, res = 200)
 }
 \arguments{
-\item{mu}{Rate of de novo mutation wt -> mutant}
+\item{mu}{Rate of de novo mutation ancestral -> variant}
 
-\item{omega}{Relative transmission fitness (<1) of the mutant type}
+\item{omega}{Relative transmission fitness (<1) of the variant type}
 
 \item{mh}{Maximum time in the past to simulate}
 

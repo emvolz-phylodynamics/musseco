@@ -2,5 +2,5 @@
 
 export(bisseco_plot)
 export(loglikelihood_bisseco)
-export(pwt_mutsel_balance)
+export(pancestral_mutsel_balance)
 export(simulate_bisseco)

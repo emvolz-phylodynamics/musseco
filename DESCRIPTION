@@ -9,4 +9,4 @@ Description: Methods for simulating genealogies and estimating parameters for a 
 License: MIT 
 Depends: phydynR (>= 0.2.1), ape
 Suggests: ggtree, treeio 
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1

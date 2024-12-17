@@ -16,9 +16,9 @@ simulate_bisseco(
 )
 }
 \arguments{
-\item{mu}{Rate of de novo mutation wt -> mutant}
+\item{mu}{Rate of de novo mutation ancestral -> variant}
 
-\item{omega}{Relative transmission fitness (<1) of the mutant type}
+\item{omega}{Relative transmission fitness (<1) of the variant type}
 
 \item{maxHeight}{Maximum time in the past to simulate}
 
@@ -27,7 +27,7 @@ matrix, such that the first column is time and the second column is population s
 
 \item{sampleTimes}{A vector of sample times}
 
-\item{sampleStates}{A matrix describing the state (wt or mutant) for each sample}
+\item{sampleStates}{A matrix describing the state (ancestral or variant) for each sample}
 
 \item{res}{Number of time points to simulate}
 }
@@ -45,9 +45,9 @@ sts <- setNames( sample( seq( 300, 500, length=20 )), letters[1:20] )
 # We will have the effective sample size increase linearly through time so that external branch lengths are longer: 
 net <- cbind( seq(0, 501, length=500),  seq(1,200,length=500)  )
 
-# Sample states: arranged in a matrix where each row gives the probability of being wildtype or mutant
-ssts <- cbind( wt = c( rep(1,15), rep(0, 5))
- , mutant = c( rep( 0, 15), rep(1, 5 ) ) 
+# Sample states: arranged in a matrix where each row gives the probability of being wildtype or variant
+ssts <- cbind( ancestral = c( rep(1,15), rep(0, 5))
+ , variant = c( rep( 0, 15), rep(1, 5 ) ) 
  )
 rownames( ssts ) <- letters[1:20]
 

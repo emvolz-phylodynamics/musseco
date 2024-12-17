@@ -7,14 +7,12 @@
 loglikelihood_bisseco(mu_omega, dtr, Net, res = 200, ...)
 }
 \arguments{
-\item{mu_omega}{a 2-vector containing parameters mu (mutation rate) and omega (selection coef)}
+\item{mu_omega}{a 2-vector containing parameters mu (mutation rate) and omega (relative fitness = 1+s)}
 
 \item{dtr}{A phydynR::DatedTree}
 
 \item{Net}{Effective population size through time. This is stored as a two column
 matrix, such that the first column is time and the second column is population size}
-
-\item{maxHeight}{Maximum time in the past to simulate}
 }
 \description{
 Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time
