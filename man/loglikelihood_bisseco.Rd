@@ -4,15 +4,22 @@
 \alias{loglikelihood_bisseco}
 \title{Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time}
 \usage{
-loglikelihood_bisseco(mu_omega, dtr, Net, res = 200, ...)
+loglikelihood_bisseco(
+  parms,
+  dtr,
+  Net,
+  augment_likelihood = TRUE,
+  res = 200,
+  ...
+)
 }
 \arguments{
-\item{mu_omega}{a 2-vector containing parameters mu (mutation rate) and omega (relative fitness = 1+s)}
-
 \item{dtr}{A phydynR::DatedTree}
 
 \item{Net}{Effective population size through time. This is stored as a two column
 matrix, such that the first column is time and the second column is population size}
+
+\item{mu_omega}{a 2-vector containing parameters mu (mutation rate) and omega (relative fitness = 1+s)}
 }
 \description{
 Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time

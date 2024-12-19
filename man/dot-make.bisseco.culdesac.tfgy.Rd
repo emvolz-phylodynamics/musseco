@@ -4,7 +4,7 @@
 \alias{.make.bisseco.culdesac.tfgy}
 \title{Generates an epidemiological history as input for the tree simulation functions}
 \usage{
-.make.bisseco.culdesac.tfgy(mu, omega, mh, Net, res = 200)
+.make.bisseco.culdesac.tfgy(mu, omega, yscale, mh, maxst, Net, res = 200)
 }
 \arguments{
 \item{mu}{Rate of de novo mutation ancestral -> variant}
@@ -13,8 +13,10 @@
 
 \item{mh}{Maximum time in the past to simulate}
 
+\item{maxst, }{maximum sample time ; time of last tip in the tree}
+
 \item{Net}{Effective population size through time. This is stored as a two column
-matrix, such that the first column is time and the second column is population size}
+matrix, such that the first column is time (forward, since some point in the past) and the second column is population size}
 
 \item{res}{Number of time points to simulate}
 }
