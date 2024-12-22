@@ -1,7 +1,7 @@
 Package: musseco
 Type: Package
 Title: Multi-State Speciation and Extinction Coalescent 
-Version: 0.0.4
+Version: 0.0.5
 Date: 2024-12-19
 Author: Erik Volz 
 Maintainer: Erik Volz <erik.volz@gmail.com>
