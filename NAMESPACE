@@ -2,8 +2,5 @@
 
 S3method(coef,bissecofit)
 S3method(print,bissecofit)
-export(bissecoplot)
 export(fitbisseco)
 export(loglikelihood_bisseco)
-export(pancestral_mutsel_balance)
-export(simulate_bisseco)

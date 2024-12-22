@@ -6,8 +6,8 @@
 #' 14 January 2020 
 
 
-DEFAULT_SGPARMS  <- list(  tau = NULL, tau_lower = 0.1, tau_upper = 1e6, ncpu = 1, model = 1  ) 
-DEFAULT_OPTIMPARMS <- list( method = 'Nelder-Mead', control = list(fnscale=-1) )
+DEFAULT_SGPARMS  <- list(  tau = NULL, tau_lower = 0.1, tau_upper = 1e7, ncpu = 1, model = 2  ) 
+DEFAULT_OPTIMPARMS <- list( method = 'Nelder-Mead', control = list(fnscale=-1) , hessian=TRUE)
 DEFAULT_COLIK_PARMS <- list( 
 			AgtY_penalty = 0 
 			, PL2=TRUE 
@@ -15,33 +15,23 @@ DEFAULT_COLIK_PARMS <- list(
 
 #' Theoretical frequency of the wild type assuming mutation & selection balance 
 #' with a variant that has lower transmission fitness
-#' 
-#' @return Scalar frequency of the wild type 
-#' @param mu Rate of de novo mutation ancestral -> variant
-#' @param omega Relative transmission fitness (must be <1) of the variant type
-#' @export 
-pancestral_mutsel_balance <- function( mu, omega ){
-	min(1, max(0, (1 - omega*(1+mu)) / (1-omega*(1+mu) + mu ) ) )
+pancestral_mutsel_balance1 <- function( mu, gamma, alpha, omega, tol = 1e-3 ){
+	proot <- function( p ){# 
+		p*(gamma*(1-p)+mu*(1-p)-mu*alpha*p) - (omega*(1-p))*(gamma*p + mu*alpha*p - mu*(1-p))  
+	}
+	uniroot( proot, c(0,1), tol = tol )$root
 }
 
 #' Generates an epidemiological history as input for the tree simulation functions
 #'
 #' See _phydynR_ package for details on output format 
-#' 
-#' @param mu Rate of de novo mutation ancestral -> variant
-#' @param omega Relative transmission fitness (<1) of the variant type
-#' @param mh Maximum time in the past to simulate
-#' @param maxst, maximum sample time ; time of last tip in the tree 
-#' @param Net Effective population size through time. This is stored as a two column
-#' matrix, such that the first column is time (forward, since some point in the past) and the second column is population size
-#' @param res Number of time points to simulate
-.make.bisseco.culdesac.tfgy <- function( mu, omega, yscale, mh, maxst, Net, res = 200 )
+.make.bisseco.culdesac.tfgy <- function( mu, gamma, alpha, omega, yscale, mh, maxst, Net, pa, res = 200 )
 {
 	stopifnot( omega < 1  )
 	demes <- c('ancestral', 'variant' )
 	
 	# Proportion ancestral type 
-	pa <- min(1, max(0, (1 - omega*(1+mu)) / (1-omega*(1+mu) + mu ) ) )
+	# pa <- pancestral_mutsel_balance1( mu, gamma, alpha, omega )
 	
 	times <- seq( maxst - mh, maxst, length = res ) 
 	dx <- diff( times[1:2] )
@@ -64,7 +54,7 @@ pancestral_mutsel_balance <- function( mu, omega ){
 	
 	# Mutation rates from ancestral type to variant type
 	.G <- lapply( 1:nt,  function(k) matrix( nrow=2, byrow=TRUE
-	 , c( 0			, mu*Yancestral[k],
+	 , c( 0			, alpha*mu*Yancestral[k],
 	      mu*Yvariant[k]	, 0
 	 )))
 	for (k in seq_along(.G)){
@@ -101,7 +91,6 @@ pancestral_mutsel_balance <- function( mu, omega ){
 #' @param sampleTimes A vector of sample times 
 #' @param sampleStates A matrix describing the state (ancestral or variant) for each sample
 #' @return A simulated genealogy in ape::phylo format 
-#' @export 
 #' @examples 
 #' set.seed(23) 
 #' # Sample times: these will be distributed over 150 years to show role of heterochronous sampling
@@ -139,8 +128,7 @@ pancestral_mutsel_balance <- function( mu, omega ){
 #' p2 <-bisseco_plot( tr2, legend=TRUE)
 simulate_bisseco <- function( mu, omega, maxHeight , Net, sampleTimes, sampleStates, res = 200,  ...)
 {
-	# library( phydynR )
-	# library( ape )
+	stop('Not implemented' ) # need to update this method 
 
 	if (pancestral_mutsel_balance( mu, omega ) <= 0 ) 
 		return(NULL)
@@ -149,47 +137,57 @@ simulate_bisseco <- function( mu, omega, maxHeight , Net, sampleTimes, sampleSta
 }
 
 
-sample_loglikelihood <- function(mu, omega, dtr)
-{ 
-	isa <- dtr$sampleStates[, 'ancestral']==1 
-	pa <- pancestral_mutsel_balance( mu, omega )
-	# dbinom( isa, size = 1, prob = pa , log=TRUE ) |> sum()
-	dbinom( sum(isa), size = length(isa), prob = pa , log=TRUE )
-}
-
 #' Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time
 #'
-#' @param mu_omega a 2-vector containing parameters mu (mutation rate) and omega (relative fitness = 1+s)
+#' @param parms a 3-vector containing parameters alpha (ratio substitution rate to variant relative to ancestral type), omega (relative fitness = 1+s) and yscale (population size adjustment)
+#' @param mu Mean clock rate of evolution 
+#' @param gamma 1 / generation time 
 #' @param dtr A phydynR::DatedTree
 #' @param Net Effective population size through time. This is stored as a two column
+#' @param res integer number of time points used for coalescent approximation 
 #' matrix, such that the first column is time and the second column is population size
 #' @export 
-loglikelihood_bisseco <- function( parms, dtr, Net, augment_likelihood=TRUE, res = 200, ... )
+loglikelihood_bisseco <- function( parms, mu, gamma, dtr, Net, augment_likelihood=TRUE, res=200, ... )
 {
-	mu <- parms[1]
+	alpha  <- parms[1]
 	omega <- parms[2]
 	yscale <- parms[3] 
 	if( omega >= 1 ) return(-Inf)
-	tfgy <- .make.bisseco.culdesac.tfgy( mu, omega, yscale, dtr$maxHeight, dtr$maxSampleTime,  Net, res)
+	pa <- pancestral_mutsel_balance1( mu, gamma, alpha, omega )
+	tfgy <- .make.bisseco.culdesac.tfgy( mu, gamma, alpha, omega, yscale, dtr$maxHeight, dtr$maxSampleTime,  Net, pa, res)
 	coparms  <- modifyList( DEFAULT_COLIK_PARMS, list(...)  )
 	coparms <- c(list( dtr ), list( tfgy), coparms )
-	sl <- ifelse( augment_likelihood, sample_loglikelihood( mu, omega, dtr) , 0 ) 
-	do.call( phydynR::colik.pik.fgy, coparms ) + sl 
+	sl <- ifelse( augment_likelihood, {
+			if ( is.null( dtr$nanc )){
+				dtr$nanc <- sum( dtr$sampleStates[, 'ancestral'])
+			}
+			dbinom( dtr$nanc, size = ape::Ntip(dtr), prob = pa , log=TRUE )
+		} , 0 ) # 
+	l = do.call( phydynR::colik.pik.fgy, coparms ) 
+	l + sl 
 }
 
 #' Fits the parameters of a BiSSeCo model by maximum likelihood 
 #' 
-#' This method will estimate a de novo mutation rate (mu) reflecting within-host fitness of a variant and between host relative fitness (omega) reflecting differences in transmissibility. 
+#' This method estimates a pair of selection coefficients from pathogen phylogenies representing differences in transmissibility and differences in within-host fitness. 
+#' Pathogen phylogenies are assumed to be reconstructed from population-based random samples of pathogen genomes and at most one sequence per host. 
+#' Phylogenies should be time-scaled, and an estimate of the molecular clock rate of evolution should be provided, such as estimated with the `treedater` package. 
 #' 
 #' @param tr an ape::phylo representing a time-scaled phylogeny. These can be computed with the `treedater` package 
 #' @param isvariant vector of type boolean with length equal to ape::Ntip(tr). Each element is TRUE if the corresponding element in tr$tip.label is a variant type 
+#' @param Tg Generation time, i.e. the mean time elapsed between generations. Units of this variable should match those used in tr$edge.length and 1/mu, e.g. days or years  
+#' @param mu Molecular clock rate of evolution 
 #' @param Net  NULL or a matrix with two columns giving the effective population size. If NULL, the effective population size will be computed with the `mlesky` package. The first column should be time since some point in the past, and the second column should be an estimate of the effective population size. Time zero should correspond to the root of the tree 
 #' @param theta0 Initial guess of (log) parameter values: mu, omega, and Ne scale. 
 #' @param augment_likelihood if TRUE (default), will combine the coalescent likelihood with a binomial likelihood of sampling variants or ancestral types under the assumption of random sampling and mutation-selection balance 
 #' @param optim_parms optional list of parameters passed to optim when fitting the model 
 #' @param mlesky_parms optional list of parameters passed to mlesky::mlskygrid if estimating Ne(t) 
+#' @param res Integer number time steps used in coalescent likelihood 
+#' @param ... Additional parameters are passed to phydynR::colik 
 #' @export 
-fitbisseco <- function(tr, isvariant, Net = NULL, theta0 = log(c(.05, .95, 1)), augment_likelihood = TRUE, optim_parms = list(), mlesky_parms = list() )
+fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
+		       , theta0 = log(c(alpha=15, omega=.95, yscale=1))
+		       , augment_likelihood = TRUE, optim_parms = list(), mlesky_parms = list(), res=200, ... )
 {
 
 	sts <- node.depth.edgelength( tr )[1:Ntip(tr)] |> setNames( tr$tip.label )
@@ -201,12 +199,17 @@ fitbisseco <- function(tr, isvariant, Net = NULL, theta0 = log(c(.05, .95, 1)), 
 	ssts[ isvariant , 'variant'] <- 1.0 
 	
 	bdt <- phydynR::DatedTree( tr, sts, sampleStates = ssts ) 
+	bdt$nanc <- sum( bdt$sampleStates[, 'ancestral'])
+	
+	gamma = 1/Tg 
 	
 	fsg <- NULL 
 	if ( is.null( Net ) )
 	{
 		sgparms  <- modifyList( DEFAULT_SGPARMS, mlesky_parms )
 		sgparms <- c( list( tr, sampleTimes = sts ), sgparms )
+		if ( 'tau' %in% names(mlesky_parms) & is.null( mlesky_parms[['tau']] ) ) # need to modify any NULL parms manually 
+			sgparms$tau <- NULL 
 		fsg = do.call( mlesky::mlskygrid, sgparms )
 		Net <- cbind( fsg$time, fsg$ne )
 	}
@@ -214,7 +217,7 @@ fitbisseco <- function(tr, isvariant, Net = NULL, theta0 = log(c(.05, .95, 1)), 
 	lfun <- function( theta  )
 	{
 
-		l = tryCatch( loglikelihood_bisseco(  exp(theta) , bdt, Net, augment_likelihood = augment_likelihood  )
+		l = tryCatch( loglikelihood_bisseco(  exp(theta) , mu, gamma , bdt, Net, augment_likelihood = augment_likelihood, res = res , ... )
 			, error = function(e) -Inf )
 
 		print( Sys.time() )
@@ -226,33 +229,42 @@ fitbisseco <- function(tr, isvariant, Net = NULL, theta0 = log(c(.05, .95, 1)), 
 	oparms <- modifyList( DEFAULT_OPTIMPARMS , optim_parms )
 	oparms <- c( list( par = theta0, fn = lfun ), oparms )
 	o = do.call( optim, oparms )
-	# o = optim( par = theta0, fn = lfun, method = 'Nelder-Mead', control = list(trace=-6, fnscale=-1))
 
+	fberr <- rep(NA, 3 )
+	if (!is.null( o$hessian ))
+		fberr <- (-o$hessian) |> solve() |> diag() |> abs() |> sqrt()
+	
 	etheta <- exp( o$par ) 
 	structure( 
 	list( 
-	     mu = etheta[1]
+	     mu = mu
+	     , alpha = etheta[1] 
 	     , omega = etheta[2] 
+	     , yscale = etheta[3] 
 	     , s = etheta[2] -1 
 	     , optimoutput = o 
 	     , Net = Net 
 	     , mleskyfit = fsg 
+	     , err = fberr 
 	     )
 	     , class = 'bissecofit' )
 }
 
 
 	     # # TODO 
-	     # print and summary methods 
 	     # profile CIs, incl. signif level of s < 0
-	     # include reversions
 
 #' @export 
 print.bissecofit <- function(x) 
 {
 	stopifnot( inherits(x, 'bissecofit' ))
-	print( as.data.frame( coef(x)))
-	print( paste( 'Likelihood:', x$optimoutput$value ))
+	vnames <-  c('alpha', 'omega', 'yscale') 
+	cx <- coef(x)[vnames]
+	odf = as.data.frame( cx )
+	odf$`2.5%` <- exp( log(coef(x)[vnames])-x$err*1.96 )
+	odf$`97.5%` <- exp( log(coef(x)[vnames])+x$err*1.96 )
+	print( odf )
+	cat( paste( 'Likelihood:', x$optimoutput$value, '\n' ))
 	invisible( x )
 }
 
@@ -260,40 +272,7 @@ print.bissecofit <- function(x)
 coef.bissecofit <- function(x)
 {
 	stopifnot( inherits(x, 'bissecofit' ))
-	c( mu = x$mu, omega = x$omega, s = x$s )
+	c( alpha=x$alpha, omega = x$omega, yscale = x$yscale, s = x$s )
 }
 
-
-#' Make a plot of a bisseco tree that shows ancestral states at internal nodes estimated using a simple discrete trait analysis 
-#'
-#' @param tr A tree (phydynR::DatedTree) simulated using simulate_bisseco
-#' @export 
-bissecoplot <- function(tr, legend=FALSE)
-{
-	stopifnot(require( ggtree ))
-	stopifnot(require( treeio ))
-
-	ssts <- tr$sampleStates
-	cols <- c( ancestral = 'blue', variant = 'red' )
-	
-	mtips <- rownames(ssts)[ ssts[,'variant']>.5 ]
-	x <- setNames( rep('ancestral', ape::Ntip(tr)), tr$tip.label)
-	x[ names(x) %in% mtips ] <- 'variant' 
-	class( tr ) <- 'phylo'
-	tr2 <- treeio::full_join(tr, data.frame(label = names(x), stat = x ), by = 'label')
-	p <- ggtree(tr2) +
-		geom_tippoint(aes(color = stat)) + 
-		ggplot2::scale_color_manual(values = cols)
-	fitER <- ape::ace(x,tr,model="ER",type="discrete")
-	ancstats <- as.data.frame(fitER$lik.anc)
-	ancstats$node <- 1:tr$Nnode+Ntip(tr)
-
-	pies <- nodepie(ancstats, cols = 1:2)
-	pies <- lapply(pies, function(g) g+ ggplot2::scale_fill_manual(values = cols))
-	p = p + geom_inset(pies, width = .1, height = .1) 
-	if (!legend)
-		p = p + theme(legend.position='none')
-		
-	p
-}
 
