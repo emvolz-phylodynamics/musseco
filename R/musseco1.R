@@ -22,12 +22,18 @@ pancestral_mutsel_balance1 <- function( mu, gamma, alpha, omega, tol = 1e-3 ){
 	uniroot( proot, c(0,1), tol = tol )$root
 }
 
+# changing defaults to opt tau 
+.mlesky <- function( tre, sampleTimes = NULL, res = 25, tau = NULL, tau_lower = .01, tau_upper = 1e7, tau_tol = 0.001, ncross = 5, ncpu = 1, quiet = TRUE, NeStartTimeBeforePresent = Inf, ne0 = NULL, adapt_time_axis = FALSE, model = 1, formula = NULL, data = NULL ) 
+{
+	mlesky::mlskygrid(  tre, sampleTimes, res, tau, tau_lower, tau_upper , tau_tol , ncross , ncpu , quiet , NeStartTimeBeforePresent , ne0 , adapt_time_axis , model , formula , data  ) 
+}
+
 #' Generates an epidemiological history as input for the tree simulation functions
 #'
 #' See _phydynR_ package for details on output format 
 .make.bisseco.culdesac.tfgy <- function( mu, gamma, alpha, omega, yscale, mh, maxst, Net, pa, res = 200 )
 {
-	stopifnot( omega < 1  )
+	# stopifnot( omega < 1  )
 	demes <- c('ancestral', 'variant' )
 	
 	# Proportion ancestral type 
@@ -208,9 +214,9 @@ fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
 	{
 		sgparms  <- modifyList( DEFAULT_SGPARMS, mlesky_parms )
 		sgparms <- c( list( tr, sampleTimes = sts ), sgparms )
-		if ( 'tau' %in% names(mlesky_parms) & is.null( mlesky_parms[['tau']] ) ) # need to modify any NULL parms manually 
-			sgparms$tau <- NULL 
-		fsg = do.call( mlesky::mlskygrid, sgparms )
+		# if ( 'tau' %in% names(mlesky_parms) & is.null( mlesky_parms[['tau']] ) ) # need to modify any NULL parms manually 
+			# sgparms$tau <- NULL 
+		fsg = do.call( .mlesky, sgparms )
 		Net <- cbind( fsg$time, fsg$ne )
 	}
 	
