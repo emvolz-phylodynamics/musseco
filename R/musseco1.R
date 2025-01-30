@@ -175,26 +175,37 @@ loglikelihood_bisseco <- function( parms, mu, gamma, dtr, Net, augment_likelihoo
 
 #' Fits the parameters of a BiSSeCo model by maximum likelihood 
 #' 
-#' This method estimates a pair of selection coefficients from pathogen phylogenies representing differences in transmissibility and differences in within-host fitness. 
+#' This method estimates a pair of relative fitness coefficients from pathogen phylogenies representing differences in transmissibility and differences in within-host fitness. 
+#' Relative fitness is paramaterised by 1) the parameter \alpha which represents the fold-change in within-host replicative fitness and 
+#' 2) the parameter \omega which represents the fold-change in between-host replicative fitness 
+#'
 #' Pathogen phylogenies are assumed to be reconstructed from population-based random samples of pathogen genomes and at most one sequence per host. 
 #' Phylogenies should be time-scaled, and an estimate of the molecular clock rate of evolution should be provided, such as estimated with the `treedater` package. 
+#' If not provided, the effective population size over time is estimated with the `mlesky` package, and this estimate is also provided in the returned BiSSeCo fit. 
+#' 
 #' 
 #' @param tr an ape::phylo representing a time-scaled phylogeny. These can be computed with the `treedater` package 
 #' @param isvariant vector of type boolean with length equal to ape::Ntip(tr). Each element is TRUE if the corresponding element in tr$tip.label is a variant type 
 #' @param Tg Generation time, i.e. the mean time elapsed between generations. Units of this variable should match those used in tr$edge.length and 1/mu, e.g. days or years  
 #' @param mu Molecular clock rate of evolution 
 #' @param Net  NULL or a matrix with two columns giving the effective population size. If NULL, the effective population size will be computed with the `mlesky` package. The first column should be time since some point in the past, and the second column should be an estimate of the effective population size. Time zero should correspond to the root of the tree 
-#' @param theta0 Initial guess of (log) parameter values: mu, omega, and Ne scale. 
+#' @param theta0 Initial guess of (log) parameter values: alpha, omega, and Ne scale. Can be a named vector or in the aforementioned order. 
 #' @param augment_likelihood if TRUE (default), will combine the coalescent likelihood with a binomial likelihood of sampling variants or ancestral types under the assumption of random sampling and mutation-selection balance 
 #' @param optim_parms optional list of parameters passed to optim when fitting the model 
 #' @param mlesky_parms optional list of parameters passed to mlesky::mlskygrid if estimating Ne(t) 
 #' @param res Integer number time steps used in coalescent likelihood 
 #' @param ... Additional parameters are passed to phydynR::colik 
+#' @return A fitted BiSSeCo model with coef and summary methods 
 #' @export 
 fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
 		       , theta0 = log(c(alpha=15, omega=.95, yscale=1))
 		       , augment_likelihood = TRUE, optim_parms = list(), mlesky_parms = list(), res=200, ... )
 {
+	stopifnot( length( theta0 ) == 3 )
+	pnames <- c( 'alpha', 'omega', 'yscale' )
+	if (!is.null( names(theta0)))
+		theta0 <- theta0[pnames]
+	names( theta0 ) <- pnames 
 
 	sts <- node.depth.edgelength( tr )[1:Ntip(tr)] |> setNames( tr$tip.label )
 	maxsts <- max(sts) 
@@ -220,17 +231,14 @@ fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
 		Net <- cbind( fsg$time, fsg$ne )
 	}
 	
-	lfun <- function( theta  )
+	lfun <- function( theta )
 	{
-
 		l = tryCatch( loglikelihood_bisseco(  exp(theta) , mu, gamma , bdt, Net, augment_likelihood = augment_likelihood, res = res , ... )
 			, error = function(e) -Inf )
-
 		print( Sys.time() )
 		print( exp(theta) ) 
 		print( l ) 
 		l 
-
 	}
 	oparms <- modifyList( DEFAULT_OPTIMPARMS , optim_parms )
 	oparms <- c( list( par = theta0, fn = lfun ), oparms )
@@ -240,18 +248,18 @@ fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
 	if (!is.null( o$hessian ))
 		fberr <- (-o$hessian) |> solve() |> diag() |> abs() |> sqrt()
 	
-	etheta <- exp( o$par ) 
+	etheta <- unname( exp( o$par )  )
 	structure( 
-	list( 
-	     mu = mu
-	     , alpha = etheta[1] 
-	     , omega = etheta[2] 
-	     , yscale = etheta[3] 
-	     , s = etheta[2] -1 
-	     , optimoutput = o 
-	     , Net = Net 
-	     , mleskyfit = fsg 
-	     , err = fberr 
+		list( 
+	     	     mu = mu
+	     	     , alpha = etheta[1] 
+	     	     , omega = etheta[2] 
+	     	     , yscale = etheta[3] 
+	     	     , s = etheta[2] -1 
+	     	     , optimoutput = o 
+	     	     , Net = Net 
+	     	     , mleskyfit = fsg 
+	     	     , err = fberr 
 	     )
 	     , class = 'bissecofit' )
 }
@@ -260,17 +268,39 @@ fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
 	     # # TODO 
 	     # profile CIs, incl. signif level of s < 0
 
+# threshold for approximate CIs 
+MAXCOEFVAR <- 1.5 
+
 #' @export 
-print.bissecofit <- function(x) 
+summary.bissecofit <- function(x)
 {
 	stopifnot( inherits(x, 'bissecofit' ))
 	vnames <-  c('alpha', 'omega', 'yscale') 
 	cx <- coef(x)[vnames]
 	odf = as.data.frame( cx )
+	colnames( odf ) <- ''
 	odf$`2.5%` <- exp( log(coef(x)[vnames])-x$err*1.96 )
-	odf$`97.5%` <- exp( log(coef(x)[vnames])+x$err*1.96 )
+	odf$`97.5%` <- exp( log(coef(x)[vnames])+ x$err*1.96 )
+	odf$`97.5%`[ x$err > MAXCOEFVAR ] <- Inf 
+	odf <- round( odf, 3 )
+
+	cat( 'Binary state speciation and extinction coalescent fit\n' )
+	cat( '\n' )
 	print( odf )
-	cat( paste( 'Likelihood:', x$optimoutput$value, '\n' ))
+	cat( '\n' )
+	cat( paste( 'Likelihood:', round(x$optimoutput$value, 4 ), '\n' ))
+	invisible( list(
+		coef = coef(x)
+		, confint = odf 
+		, fit= x$optimoutput 
+		, phylodynamics = x$Net 
+	))
+}
+
+#' @export 
+print.bissecofit <- function(x) 
+{
+	summary(x)
 	invisible( x )
 }
 

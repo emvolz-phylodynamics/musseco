@@ -1,8 +1,8 @@
 Package: musseco
 Type: Package
 Title: Multi-State Speciation and Extinction Coalescent 
-Version: 0.0.6
-Date: 2024-12-19
+Version: 0.1.0
+Date: 2025-01-30
 Author: Erik Volz 
 Maintainer: Erik Volz <erik.volz@gmail.com>
 Description: Methods for simulating genealogies and estimating parameters for a speciation and extinction coalescent process such that 1) disadvantageous alleles appear continuously in a population and are present in mutation/selection balance; 2) non-equilibrium dynamics of advantageous alleles which appear continuously and grow in frequency.

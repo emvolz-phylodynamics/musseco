@@ -29,7 +29,7 @@ fitbisseco(
 
 \item{Net}{NULL or a matrix with two columns giving the effective population size. If NULL, the effective population size will be computed with the `mlesky` package. The first column should be time since some point in the past, and the second column should be an estimate of the effective population size. Time zero should correspond to the root of the tree}
 
-\item{theta0}{Initial guess of (log) parameter values: mu, omega, and Ne scale.}
+\item{theta0}{Initial guess of (log) parameter values: alpha, omega, and Ne scale. Can be a named vector or in the aforementioned order.}
 
 \item{augment_likelihood}{if TRUE (default), will combine the coalescent likelihood with a binomial likelihood of sampling variants or ancestral types under the assumption of random sampling and mutation-selection balance}
 
@@ -41,8 +41,16 @@ fitbisseco(
 
 \item{...}{Additional parameters are passed to phydynR::colik}
 }
+\value{
+A fitted BiSSeCo model with coef and summary methods
+}
 \description{
-This method estimates a pair of selection coefficients from pathogen phylogenies representing differences in transmissibility and differences in within-host fitness. 
+This method estimates a pair of relative fitness coefficients from pathogen phylogenies representing differences in transmissibility and differences in within-host fitness. 
+Relative fitness is paramaterised by 1) the parameter \alpha which represents the fold-change in within-host replicative fitness and 
+2) the parameter \omega which represents the fold-change in between-host replicative fitness
+}
+\details{
 Pathogen phylogenies are assumed to be reconstructed from population-based random samples of pathogen genomes and at most one sequence per host. 
-Phylogenies should be time-scaled, and an estimate of the molecular clock rate of evolution should be provided, such as estimated with the `treedater` package.
+Phylogenies should be time-scaled, and an estimate of the molecular clock rate of evolution should be provided, such as estimated with the `treedater` package. 
+If not provided, the effective population size over time is estimated with the `mlesky` package, and this estimate is also provided in the returned BiSSeCo fit.
 }

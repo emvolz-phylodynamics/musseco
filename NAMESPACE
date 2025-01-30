@@ -2,5 +2,6 @@
 
 S3method(coef,bissecofit)
 S3method(print,bissecofit)
+S3method(summary,bissecofit)
 export(fitbisseco)
 export(loglikelihood_bisseco)
