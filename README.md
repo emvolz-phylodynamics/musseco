@@ -35,7 +35,7 @@ musseco has been developed by [Erik Volz](https://profiles.imperial.ac.uk/e.volz
 
 
 
-## Related softwares
+## Additional information
 
 musseco works on a fixed phylogenetic tree and therefore is *not* a program that 
 will estimate the tree for you.
