@@ -31,5 +31,5 @@ Suggests:
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 VignetteBuilder: knitr
-URL: http://emvolz.github.io/musseco/, https://github.com/emvolz/musseco
-BugReports: https://github.com/emvolz/musseco/issues
+URL: http://emvolz-phylodynamics.github.io/musseco/, https://github.com/emvolz-phylodynamics/musseco
+BugReports: https://github.com/emvolz-phylodynamics/musseco/issues

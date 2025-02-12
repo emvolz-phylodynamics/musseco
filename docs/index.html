@@ -6,11 +6,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Multi-State Speciation and Extinction Coalescent • musseco</title>
-<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="lightswitch.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Multi-State Speciation and Extinction Coalescent">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><script src="deps/MathJax-3.2.2/tex-chtml.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Multi-State Speciation and Extinction Coalescent">
 <meta name="description" content="Methods for simulating genealogies and estimating parameters for a speciation and extinction coalescent process such that 1) disadvantageous alleles appear continuously in a population and are present in mutation/selection balance; 2) non-equilibrium dynamics of advantageous alleles which appear continuously and grow in frequency.">
 <meta property="og:description" content="Methods for simulating genealogies and estimating parameters for a speciation and extinction coalescent process such that 1) disadvantageous alleles appear continuously in a population and are present in mutation/selection balance; 2) non-equilibrium dynamics of advantageous alleles which appear continuously and grow in frequency.">
 </head>
@@ -18,7 +18,7 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="index.html">musseco</a>
 
@@ -38,7 +38,15 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/emvolz/musseco/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/emvolz-phylodynamics/musseco/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -49,13 +57,41 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="musseco">musseco<a class="anchor" aria-label="anchor" href="#musseco"></a>
 </h1></div>
-<p>[M]ulti-[S]tate [S]peciation and [E]xtinction [C]oalescent</p>
+<p>musseco stands for [Mu]lti-[S]tate [S]peciation and [E]xtinction [Co]alescent and it is an <a href="https://www.r-project.org/" class="external-link">R</a> package to estimate parameters for a speciation and extinction coalescent process.</p>
+<p>We have implemented the <em>BiSSECo</em> ([Bi]nary-[S]tate [S]peciation and [E]xtinction [Co]alescent) model in which we can estimate the within-host and between-host replicative fitness using a fixed time-scaled tree.</p>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># You will need to install the R package devtools </span></span>
+<span><span class="co"># (https://github.com/r-lib/devtools)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"emvolz-phylodynamics/musseco"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="tutorials">Tutorials<a class="anchor" aria-label="anchor" href="#tutorials"></a>
+</h2>
+<ul>
+<li>We recommend that you read the <a href="http://emvolz-phylodynamics.github.io/musseco/articles/musseco.html">Get started</a> to understand the implementation of BiSSeCO.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a>
+</h2>
+<p>musseco has been developed by <a href="https://profiles.imperial.ac.uk/e.volz" class="external-link">Erik Volz</a></p>
+</div>
+<div class="section level2">
+<h2 id="related-softwares">Related softwares<a class="anchor" aria-label="anchor" href="#related-softwares"></a>
+</h2>
+<p>musseco works on a fixed phylogenetic tree and therefore is <em>not</em> a program that will estimate the tree for you.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/emvolz/musseco/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/emvolz/musseco/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/emvolz-phylodynamics/musseco/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/emvolz-phylodynamics/musseco/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -77,7 +113,8 @@
 <div class="developers">
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
-<li>Erik Volz <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-6268-8937" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
+<li>
+<a href="https://profiles.imperial.ac.uk/e.volz" class="external-link">Erik Volz</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0001-6268-8937" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a> </li>
 <li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
@@ -89,7 +126,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Erik Volz.</p>
+  <p>Website developed by <a href="https://thednainus.wordpress.com/me/" class="external-link">Fabricia F. Nascimento</a>.</p>
 </div>
 
 <div class="pkgdown-footer-right">
