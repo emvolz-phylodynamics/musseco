@@ -3,7 +3,7 @@ pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   musseco: musseco.html
-last_built: 2025-02-12T15:30Z
+last_built: 2025-02-12T15:32Z
 urls:
-  reference: http://emvolz.github.io/musseco/reference
-  article: http://emvolz.github.io/musseco/articles
+  reference: http://emvolz-phylodynamics.github.io/musseco/reference
+  article: http://emvolz-phylodynamics.github.io/musseco/articles
