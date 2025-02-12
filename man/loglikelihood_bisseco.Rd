@@ -2,7 +2,7 @@
 % Please edit documentation in R/musseco1.R
 \name{loglikelihood_bisseco}
 \alias{loglikelihood_bisseco}
-\title{Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time}
+\title{Compute the Likelihood of the BiSSeCo model}
 \usage{
 loglikelihood_bisseco(
   parms,
@@ -16,7 +16,9 @@ loglikelihood_bisseco(
 )
 }
 \arguments{
-\item{parms}{a 3-vector containing parameters alpha (ratio substitution rate to variant relative to ancestral type), omega (relative fitness = 1+s) and yscale (population size adjustment)}
+\item{parms}{a 3-vector containing parameters alpha (ratio substitution rate 
+to variant relative to ancestral type), omega (relative fitness = 1+s) and 
+yscale (population size adjustment)}
 
 \item{mu}{Mean clock rate of evolution}
 
@@ -26,9 +28,17 @@ loglikelihood_bisseco(
 
 \item{Net}{Effective population size through time. This is stored as a two column}
 
+\item{augment_likelihood}{if TRUE (default), will combine the coalescent 
+likelihood with a binomial likelihood of sampling variants or ancestral 
+types under the assumption of random sampling and mutation-selection balance}
+
 \item{res}{integer number of time points used for coalescent approximation 
-matrix, such that the first column is time and the second column is population size}
+matrix, such that the first column is time and the second column is 
+population size}
+
+\item{...}{Additional parameters are passed to \link[phydynR]{colik}}
 }
 \description{
-Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time
+Likelihood of the BiSSeCo model given rates of variant mutation, selection, 
+a dated tree, and effective population size over time
 }

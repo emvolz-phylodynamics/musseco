@@ -3,10 +3,33 @@ Type: Package
 Title: Multi-State Speciation and Extinction Coalescent 
 Version: 0.1.0
 Date: 2025-01-30
-Author: Erik Volz 
-Maintainer: Erik Volz <erik.volz@gmail.com>
-Description: Methods for simulating genealogies and estimating parameters for a speciation and extinction coalescent process such that 1) disadvantageous alleles appear continuously in a population and are present in mutation/selection balance; 2) non-equilibrium dynamics of advantageous alleles which appear continuously and grow in frequency.
+Authors@R:
+    c(person(given = "Erik",
+             family = "Volz",
+             role = c("aut", "cre"),
+             email = "erik@erikvolz.info",
+             comment = c(ORCID = "0000-0001-6268-8937")),
+      person(given = "Fabricia",
+             family = "F. Nascimento",
+             email = "thednainus@yahoo.com",
+             role = "ctb",
+             comment = c(ORCID = "0000-0001-9426-6835")))
+Description: Methods for simulating genealogies and estimating parameters for a 
+    speciation and extinction coalescent process such that 1) disadvantageous 
+    alleles appear continuously in a population and are present in mutation/selection 
+    balance; 2) non-equilibrium dynamics of advantageous alleles which appear 
+    continuously and grow in frequency.
 License: MIT 
-Depends: phydynR (>= 0.2.1), ape, mlesky
-Suggests: ggtree, treeio 
-RoxygenNote: 7.3.1
+Depends: phydynR (>= 0.2.1), 
+         ape, 
+         mlesky
+Suggests: 
+    ggtree,
+    knitr,
+    rmarkdown,
+    treeio
+Encoding: UTF-8
+RoxygenNote: 7.3.2
+VignetteBuilder: knitr
+URL: http://emvolz.github.io/musseco/, https://github.com/emvolz/musseco
+BugReports: https://github.com/emvolz/musseco/issues

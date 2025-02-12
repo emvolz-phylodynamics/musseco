@@ -1,0 +1,39 @@
+template:
+  bootstrap: 5
+light-switch: yes
+math-rendering: mathjax
+authors:
+  Erik Volz:
+  href: https://profiles.imperial.ac.uk/e.volz
+Fabricia F. Nascimento:
+  href: https://thednainus.wordpress.com/me/
+  footer:
+  roles: ctb
+text: Website developed by
+navbar:
+  structure:
+    left:
+    - intro
+    - reference
+    - articles
+    - tutorials
+    - news
+    right:
+    - search
+    - github
+    - lightswitch
+  components:
+    reference:
+      text: Functions
+      href: reference/index.html
+    intro:
+      text: Get started
+      href: articles/musseco.html
+
+reference:
+- title: Functions included in musseco
+  contents:
+  - fitbisseco
+  - loglikelihood_bisseco
+url: http://emvolz.github.io/musseco/
+

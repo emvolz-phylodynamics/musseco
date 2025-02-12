@@ -1,36 +1,57 @@
-#' Code for simulating genealogies for a "Binary state speciation and extinction model" (BiSSE)
-#' Trees are simulated using a structured coalescent framework implemented in the phydynR package
-#' In this model, a wild type mutates at a constant rate to the variant type which has lower transmission fitness. 
+# Code for simulating genealogies for a "Binary state speciation and extinction model" (BiSSE)
+# Trees are simulated using a structured coalescent framework implemented in the phydynR package
+# In this model, a wild type mutates at a constant rate to the variant type which has lower transmission fitness. 
+#
+# author: Erik M Volz <erik.volz@gmail.com>
+# 14 January 2020 
+
+
+DEFAULT_SGPARMS  <- list( tau = NULL, 
+                          tau_lower = 0.1, 
+                          tau_upper = 1e7, 
+                          ncpu = 1, 
+                          model = 2  ) 
+DEFAULT_OPTIMPARMS <- list( method = 'Nelder-Mead', 
+                            control = list(fnscale=-1), 
+                            hessian = TRUE)
+DEFAULT_COLIK_PARMS <- list( AgtY_penalty = 0,
+                             PL2 = TRUE)
+
+#' Theoretical frequency of the ancestral type
+#' 
+#' Theoretical frequency of the ancestral type assuming mutation and selection 
+#' balance with a variant that has lower transmission fitness.
 #'
-#' @author Erik M Volz <erik.volz@gmail.com>
-#' 14 January 2020 
-
-
-DEFAULT_SGPARMS  <- list(  tau = NULL, tau_lower = 0.1, tau_upper = 1e7, ncpu = 1, model = 2  ) 
-DEFAULT_OPTIMPARMS <- list( method = 'Nelder-Mead', control = list(fnscale=-1) , hessian=TRUE)
-DEFAULT_COLIK_PARMS <- list( 
-			AgtY_penalty = 0 
-			, PL2=TRUE 
-	)
-
-#' Theoretical frequency of the wild type assuming mutation & selection balance 
-#' with a variant that has lower transmission fitness
+#' @param mu Molecular clock rate of evolution
+#' @param gamma Mortality/Extinction rate
+#' @param alpha Within-host replicative fitness
+#' @param omega Between-host replicative fitness
+#' @param tol the desired accuracy (convergence tolerance) (for stats::uniroot function)
+#' @noRd
 pancestral_mutsel_balance1 <- function( mu, gamma, alpha, omega, tol = 1e-3 ){
-	proot <- function( p ){# 
-		p*(gamma*(1-p)+mu*(1-p)-mu*alpha*p) - (omega*(1-p))*(gamma*p + mu*alpha*p - mu*(1-p))  
-	}
-	uniroot( proot, c(0,1), tol = tol )$root
+  proot <- function( p ){
+    p*(gamma*(1-p)+mu*(1-p)-mu*alpha*p) - (omega*(1-p))*(gamma*p + mu*alpha*p - mu*(1-p))  
+  }
+  uniroot( proot, c(0,1), tol = tol )$root
 }
 
-# changing defaults to opt tau 
-.mlesky <- function( tre, sampleTimes = NULL, res = 25, tau = NULL, tau_lower = .01, tau_upper = 1e7, tau_tol = 0.001, ncross = 5, ncpu = 1, quiet = TRUE, NeStartTimeBeforePresent = Inf, ne0 = NULL, adapt_time_axis = FALSE, model = 1, formula = NULL, data = NULL ) 
+# mlesky parameters (see https://github.com/emvolz-phylodynamics/mlesky)
+# changing defaults to opt tau
+.mlesky <- function( tre, sampleTimes = NULL, res = 25, tau = NULL, 
+                     tau_lower = .01, tau_upper = 1e7, tau_tol = 0.001, 
+                     ncross = 5, ncpu = 1, quiet = TRUE,
+                     NeStartTimeBeforePresent = Inf, ne0 = NULL, 
+                     adapt_time_axis = FALSE, model = 1, formula = NULL, 
+                     data = NULL ) 
 {
-	mlesky::mlskygrid(  tre, sampleTimes, res, tau, tau_lower, tau_upper , tau_tol , ncross , ncpu , quiet , NeStartTimeBeforePresent , ne0 , adapt_time_axis , model , formula , data  ) 
+  mlesky::mlskygrid(  tre, sampleTimes, res, tau, tau_lower, tau_upper, tau_tol,
+                      ncross , ncpu , quiet , NeStartTimeBeforePresent , ne0 , 
+                      adapt_time_axis , model , formula , data ) 
 }
 
-#' Generates an epidemiological history as input for the tree simulation functions
-#'
-#' See _phydynR_ package for details on output format 
+# Generates an epidemiological history as input for the tree simulation functions
+#
+# See _phydynR_ package for details on output format (https://emvolz-phylodynamics.github.io/phydynR/) 
 .make.bisseco.culdesac.tfgy <- function( mu, gamma, alpha, omega, yscale, mh, maxst, Net, pa, res = 200 )
 {
 	# stopifnot( omega < 1  )
@@ -132,6 +153,8 @@ pancestral_mutsel_balance1 <- function( mu, gamma, alpha, omega, tol = 1e-3 ){
 #' # Plot the annotated trees for both scenarios
 #' p1 <-bisseco_plot( tr1, legend=TRUE) 
 #' p2 <-bisseco_plot( tr2, legend=TRUE)
+#' 
+#' @noRd
 simulate_bisseco <- function( mu, omega, maxHeight , Net, sampleTimes, sampleStates, res = 200,  ...)
 {
 	stop('Not implemented' ) # need to update this method 
@@ -143,24 +166,34 @@ simulate_bisseco <- function( mu, omega, maxHeight , Net, sampleTimes, sampleSta
 }
 
 
-#' Likelihood of the BiSSeCo model given rates of variant mutation, selection, a dated tree, and effective population size over time
+#' Compute the Likelihood of the BiSSeCo model
+#' 
+#' Likelihood of the BiSSeCo model given rates of variant mutation, selection, 
+#' a dated tree, and effective population size over time
 #'
-#' @param parms a 3-vector containing parameters alpha (ratio substitution rate to variant relative to ancestral type), omega (relative fitness = 1+s) and yscale (population size adjustment)
+#' @param parms a 3-vector containing parameters alpha (ratio substitution rate 
+#'    to variant relative to ancestral type), omega (relative fitness = 1+s) and 
+#'    yscale (population size adjustment)
 #' @param mu Mean clock rate of evolution 
 #' @param gamma 1 / generation time 
 #' @param dtr A phydynR::DatedTree
 #' @param Net Effective population size through time. This is stored as a two column
 #' @param res integer number of time points used for coalescent approximation 
-#' matrix, such that the first column is time and the second column is population size
-#' @export 
-loglikelihood_bisseco <- function( parms, mu, gamma, dtr, Net, augment_likelihood=TRUE, res=200, ... )
+#'     matrix, such that the first column is time and the second column is 
+#'     population size
+#' @inheritParams fitbisseco
+#' @export
+loglikelihood_bisseco <- function( parms, mu, gamma, dtr, Net, 
+                                   augment_likelihood = TRUE, res = 200, ... )
 {
 	alpha  <- parms[1]
 	omega <- parms[2]
 	yscale <- parms[3] 
 	if( omega >= 1 ) return(-Inf)
 	pa <- pancestral_mutsel_balance1( mu, gamma, alpha, omega )
-	tfgy <- .make.bisseco.culdesac.tfgy( mu, gamma, alpha, omega, yscale, dtr$maxHeight, dtr$maxSampleTime,  Net, pa, res)
+	tfgy <- .make.bisseco.culdesac.tfgy( mu, gamma, alpha, omega, yscale, 
+	                                     dtr$maxHeight, dtr$maxSampleTime, 
+	                                     Net, pa, res)
 	coparms  <- modifyList( DEFAULT_COLIK_PARMS, list(...)  )
 	coparms <- c(list( dtr ), list( tfgy), coparms )
 	sl <- ifelse( augment_likelihood, {
@@ -175,31 +208,88 @@ loglikelihood_bisseco <- function( parms, mu, gamma, dtr, Net, augment_likelihoo
 
 #' Fits the parameters of a BiSSeCo model by maximum likelihood 
 #' 
-#' This method estimates a pair of relative fitness coefficients from pathogen phylogenies representing differences in transmissibility and differences in within-host fitness. 
-#' Relative fitness is paramaterised by 1) the parameter \alpha which represents the fold-change in within-host replicative fitness and 
-#' 2) the parameter \omega which represents the fold-change in between-host replicative fitness 
-#'
-#' Pathogen phylogenies are assumed to be reconstructed from population-based random samples of pathogen genomes and at most one sequence per host. 
-#' Phylogenies should be time-scaled, and an estimate of the molecular clock rate of evolution should be provided, such as estimated with the `treedater` package. 
-#' If not provided, the effective population size over time is estimated with the `mlesky` package, and this estimate is also provided in the returned BiSSeCo fit. 
+#' This method estimates a pair of relative fitness coefficients from pathogen 
+#' phylogenies representing differences in transmissibility and differences in 
+#' within-host fitness. 
+#' Relative fitness is paramaterised by 1) the parameter "alpha" which represents 
+#' the fold-change in within-host replicative fitness and 
+#' 2) the parameter "omega" which represents the fold-change in between-host 
+#' replicative fitness. See details for more information.
 #' 
 #' 
-#' @param tr an ape::phylo representing a time-scaled phylogeny. These can be computed with the `treedater` package 
-#' @param isvariant vector of type boolean with length equal to ape::Ntip(tr). Each element is TRUE if the corresponding element in tr$tip.label is a variant type 
-#' @param Tg Generation time, i.e. the mean time elapsed between generations. Units of this variable should match those used in tr$edge.length and 1/mu, e.g. days or years  
+#' @param tr an ape::phylo representing a time-scaled phylogeny. These 
+#'    can be computed with the \link{treedater} package 
+#' @param isvariant vector of type boolean with length equal to ape::Ntip(tr). 
+#'    Each element is TRUE if the corresponding element in tr$tip.label is a 
+#'    variant type 
+#' @param Tg Generation time, i.e. the mean time elapsed between generations. 
+#'    Units of this variable should match those used in tr$edge.length and 1/mu, 
+#'    e.g. days or years  
 #' @param mu Molecular clock rate of evolution 
-#' @param Net  NULL or a matrix with two columns giving the effective population size. If NULL, the effective population size will be computed with the `mlesky` package. The first column should be time since some point in the past, and the second column should be an estimate of the effective population size. Time zero should correspond to the root of the tree 
-#' @param theta0 Initial guess of (log) parameter values: alpha, omega, and Ne scale. Can be a named vector or in the aforementioned order. 
-#' @param augment_likelihood if TRUE (default), will combine the coalescent likelihood with a binomial likelihood of sampling variants or ancestral types under the assumption of random sampling and mutation-selection balance 
-#' @param optim_parms optional list of parameters passed to optim when fitting the model 
-#' @param mlesky_parms optional list of parameters passed to mlesky::mlskygrid if estimating Ne(t) 
+#' @param Net  NULL or a matrix with two columns giving the effective population size. 
+#'    If NULL, the effective population size will be computed with the \link{mlesky} 
+#'    package. The first column should be time since some point in the past, and 
+#'    the second column should be an estimate of the effective population size. 
+#'    Time zero should correspond to the root of the tree 
+#' @param theta0 Initial guess of (log) parameter values: alpha, omega, and Ne scale.
+#'    Can be a named vector or in the aforementioned order. 
+#' @param augment_likelihood if TRUE (default), will combine the coalescent 
+#'    likelihood with a binomial likelihood of sampling variants or ancestral 
+#'    types under the assumption of random sampling and mutation-selection balance 
+#' @param optim_parms optional list of parameters passed to \link[stats]{optim} 
+#'    when fitting the model 
+#' @param mlesky_parms optional list of parameters passed to \link[mlesky]{mlskygrid} if 
+#'     estimating Ne(t) 
 #' @param res Integer number time steps used in coalescent likelihood 
-#' @param ... Additional parameters are passed to phydynR::colik 
+#' @param ... Additional parameters are passed to \link[phydynR]{colik}
+#' 
 #' @return A fitted BiSSeCo model with coef and summary methods 
+#' 
+#' @details
+#' Pathogen phylogenies are assumed to be reconstructed from population-based 
+#' random samples of pathogen genomes and at most one sequence per host. 
+#' Phylogenies should be time-scaled, and an estimate of the molecular clock rate 
+#' of evolution should be provided, such as estimated with the \link{treedater} 
+#' package. 
+#' If not provided, the effective population size over time is estimated with the
+#' \link{mlesky} package, and this estimate is also provided in the returned BiSSeCo 
+#' fit. 
+#' 
+#' @examples
+#' 
+#' # load tree simulated with TiPS
+#' tr <- readRDS(system.file("extdata/tips_params_1_rep_2.rds", package = "musseco"))
+#' 
+#' # set to TRUE tips that are from variant
+#' isvariant <- grepl( tr$tip.label, pattern = 'V_' )
+#' isvariant <- setNames(isvariant, tr$tip.label)
+#' 
+#' #this will take a few minutes to run
+#' #the values of mu and Tg was based on true values used to simulate the trees
+#' #see vignette for more details.
+#' \dontrun{
+#' fb_au <- fitbisseco( tr,
+#'                      isvariant,
+#'                      Tg = 10.2,
+#'                      mu = 0.0016,
+#'                      Net = NULL,
+#'                      theta0 = log(c(2,.75,1/2)),
+#'                      augment_likelihood = TRUE,
+#'                      optim_parms = list(),
+#'                      mlesky_parms = list(tau = NULL,
+#'                                          tau_lower = 0.1,
+#'                                          tau_upper = 1e7,
+#'                                          ncpu = 1, 
+#'                                          model = 1 ) )
+#'}
+#' # you can load the results from here
+#' load(system.file("extdata/fit.rda", package = "musseco"))
+#' fb_au
 #' @export 
 fitbisseco <- function(tr, isvariant, Tg, mu, Net = NULL
-		       , theta0 = log(c(alpha=15, omega=.95, yscale=1))
-		       , augment_likelihood = TRUE, optim_parms = list(), mlesky_parms = list(), res=200, ... )
+                       , theta0 = log(c(alpha=15, omega=.95, yscale=1))
+                       , augment_likelihood = TRUE, optim_parms = list(), 
+                       mlesky_parms = list(), res=200, ... )
 {
 	stopifnot( length( theta0 ) == 3 )
 	pnames <- c( 'alpha', 'omega', 'yscale' )
@@ -310,5 +400,3 @@ coef.bissecofit <- function(x)
 	stopifnot( inherits(x, 'bissecofit' ))
 	c( alpha=x$alpha, omega = x$omega, yscale = x$yscale, s = x$s )
 }
-
-
