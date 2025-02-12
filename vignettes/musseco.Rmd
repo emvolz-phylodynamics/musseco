@@ -262,21 +262,34 @@ odf <- round( odf, 3 )
 odf["true_values"] <- c(1.1, 0.9, NA)
 odf["Variable"] <- c("alpha", "omega", NA)
 odf$Variable <- as.factor(odf$Variable)
+
+#add a variable to data.frame to create a legend with ggplot2
+odf["col1"] <- "Estimated values"
+odf["col2"] <- "True values"
+odf$col1 <- as.factor(odf$col1)
+odf$col2 <- as.factor(odf$col2)
 ```
 
 Plot we can plot the values for alpha and omega using ggplot.
 
-```{r figure1, fig.asp = 0.8, fig.width = 6, fig.cap = "Bar plots showing the confidence interval for estimates of alpha and omega. Blue dot is the true value", echo = TRUE}
+```{r figure1, fig.asp = 0.8, fig.width = 6.2, fig.cap = "Bar plots showing the confidence interval for estimates of alpha and omega (in orange). True values for alpha and omega are depicted in green.", echo = TRUE}
   ggplot(odf[1:2,], aes(x = Variable)) +
-  geom_point(aes(y = best_values), colour = "black", size = 3) +
-  geom_point(aes(y = true_values), colour = "blue", size = 3) +
+  geom_point(aes(y = best_values, colour = col1), size = 3) +
   geom_errorbar(aes(ymax = upper_bound, ymin = lower_bound, 
-                    width = 0.5), colour = "black") +
+                    width = 0.3, colour = col1)) +
+  geom_point(aes(y = true_values, colour = col2) , size = 3) +
   facet_wrap( ~ Variable, scales = "free") +
+  scale_color_manual(name = "",
+                     values = c("Estimated values" = "#E69F00", 
+                                "True values" =  "#009E73"), 
+                     labels = c("Estimated values", "True values")) +
   theme_bw() +
-  xlab("True value") +
+  xlab("") +
   ylab("Confidence Interval") +
-  theme(text = element_text(size = 20), legend.position = "bottom")
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        text = element_text(size = 20), 
+        legend.position = "bottom")
 
 ```
 

@@ -11,9 +11,9 @@ Methods for simulating genealogies and estimating parameters for a speciation an
 \seealso{
 Useful links:
 \itemize{
-  \item \url{http://emvolz.github.io/musseco/}
-  \item \url{https://github.com/emvolz/musseco}
-  \item Report bugs at \url{https://github.com/emvolz/musseco/issues}
+  \item \url{http://emvolz-phylodynamics.github.io/musseco/}
+  \item \url{https://github.com/emvolz-phylodynamics/musseco}
+  \item Report bugs at \url{https://github.com/emvolz-phylodynamics/musseco/issues}
 }
 
 }
