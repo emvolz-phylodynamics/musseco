@@ -1,7 +1,7 @@
 # musseco
 
 musseco stands for [Mu]lti-[S]tate [S]peciation and [E]xtinction [Co]alescent and
-it is an [R](https://www.r-project.org/) package to estimate parameters for 
+is an [R](https://www.r-project.org/) package to estimate parameters for 
 a speciation and extinction coalescent process.
 
 
@@ -25,7 +25,7 @@ devtools::install_github("emvolz-phylodynamics/musseco")
 ## Tutorials
 
 * We recommend that you read the [Get started](http://emvolz-phylodynamics.github.io/musseco/articles/musseco.html) to 
-understand the implementation of BiSSeCO.
+understand the implementation of BiSSECo.
 
 
 
