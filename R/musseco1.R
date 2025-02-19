@@ -64,10 +64,12 @@ pancestral_mutsel_balance1 <- function( mu, gamma, alpha, omega, tol = 1e-3 ){
 	dx <- diff( times[1:2] )
 	nt <- length( times )
 	
+	# Tg <- 1 / gamma 
 	ix <- order( Net[,1] )
 	neaf <- approxfun( Net[ix, 1] , Net[ix, 2] , rule = 2 )
-	ne <- neaf( times ) 
-	y = 2*ne /( pa^2*(1-omega) + pa*omega )
+	ne <- neaf( times ) #/ Tg  
+	# y = 2*ne /( pa^2*(1-omega) + pa*omega )
+	y = 2*ne*(pa + (1-pa)*omega)
 	
 	# Population sizes 
 	Yancestral <-  pmax(0, yscale * y * pa )
