@@ -22,6 +22,7 @@ Useful links:
 
 Other contributors:
 \itemize{
+  \item Kieran O. Drake \email{k.o.drake@gmail.com} (\href{https://orcid.org/0000-0002-1280-9523}{ORCID}) [contributor]
   \item Fabricia F. Nascimento \email{thednainus@yahoo.com} (\href{https://orcid.org/0000-0001-9426-6835}{ORCID}) [contributor]
 }
 

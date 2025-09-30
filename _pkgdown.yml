@@ -5,11 +5,16 @@ template:
 authors:
   Erik Volz:
     href: https://profiles.imperial.ac.uk/e.volz
+  Kieran O. Drake:
+    href: https://profiles.imperial.ac.uk/k.drake
   Fabricia F. Nascimento:
     href: https://thednainus.wordpress.com/me/
-  footer:
-    roles: ctb
-    text: Website developed by
+footer:
+  structure:
+    left: custom_contributor
+  components:
+    custom_contributor: "<p>Website developed by <a href='https://profiles.imperial.ac.uk/f.ferreira-do-nascimento'>Fabricia F. Nascimento</a></p>"
+    authors: false  # Disable automatic contributor listing
 navbar:
   structure:
     left:
