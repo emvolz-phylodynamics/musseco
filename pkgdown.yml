@@ -1,9 +1,9 @@
-pandoc: '3.4'
-pkgdown: 2.1.1
+pandoc: 3.6.3
+pkgdown: 2.1.3
 pkgdown_sha: ~
 articles:
   musseco: musseco.html
-last_built: 2025-02-12T22:15Z
+last_built: 2025-09-30T12:14Z
 urls:
   reference: http://emvolz-phylodynamics.github.io/musseco/reference
   article: http://emvolz-phylodynamics.github.io/musseco/articles
