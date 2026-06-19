@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/666453788.svg)](https://doi.org/10.5281/zenodo.20761884)
+
 # musseco
 
 **musseco** stands for [Mu]lti-[S]tate [S]peciation and [E]xtinction [Co]alescent and
